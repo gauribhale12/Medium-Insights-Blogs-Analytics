@@ -1,0 +1,148 @@
+// Neo4j Graph Database Integration: Creation Script 
+
+
+// DELETE EVERYTHING, IF EXISTS IN DATABASE
+MATCH (n) DETACH DELETE n;
+
+// CREATE UNIQUE CONSTRAINT ON EACH NODE
+CREATE CONSTRAINT ON (article:Article) ASSERT article.Title IS UNIQUE;
+CREATE CONSTRAINT ON (subtitle:Subtitle) ASSERT subtitle.Name IS UNIQUE;
+CREATE CONSTRAINT ON (image:Image) ASSERT image.Boolean IS UNIQUE;
+CREATE CONSTRAINT ON (author:Author) ASSERT author.Name IS UNIQUE;
+CREATE CONSTRAINT ON (publication:Publication) ASSERT publication.Name IS UNIQUE;
+CREATE CONSTRAINT ON (year:Year) ASSERT year.Year IS UNIQUE;
+CREATE CONSTRAINT ON (month:Month) ASSERT month.Month IS UNIQUE;
+CREATE CONSTRAINT ON (day:Day) ASSERT day.Day IS UNIQUE;
+CREATE CONSTRAINT ON (readingTime:ReadingTime) ASSERT readingTime.Minutes IS UNIQUE;
+CREATE CONSTRAINT ON (claps:Claps) ASSERT claps.Count IS UNIQUE;
+CREATE CONSTRAINT ON (category:Category) ASSERT category.Type IS UNIQUE;
+
+
+// CREATE ARTICLE
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (article:Article {Title: row.Title })
+ON CREATE SET
+article.URL = row.URL;
+
+// CREATE SUBTITLE
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (subtitle:Subtitle {Name: row.Subtitle })
+
+// CREATE RELATION BETWEEN ARTICLE AND SUBTITLE
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (subtitle:Subtitle {Name: row.Subtitle })
+MERGE (article)-[:ASSOCIATED]->(subtitle);
+
+// CREATE AUTHOR
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (author:Author {Name: row.Author })
+ON CREATE SET
+author.URL = row.Author_URL;
+
+// CREATE RELATION BETWEEN ARTICLE AND AUTHOR
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (author:Author {Name: row.Author })
+MERGE (author)-[:COMPOSED]->(article);
+
+// CREATE PUBLICATION
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (publication:Publication {Name: row.Publication })
+
+// CREATE RELATION BETWEEN ARTICLE AND PUBLICATION
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (publication:Publication {Name: row.Publication })
+MERGE (article)-[:PUBLISHED_BY]->(publication);
+
+// CREATE YEAR
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (year:Year {Year: row.Year });
+
+// CREATE MONTH
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (month:Month {Month: row.Month });
+
+// CREATE DAY
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (day:Day {Day: row.Day });
+
+// CREATE RELATION BETWEEN ARTICLE AND YEAR
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (year:Year {Year: row.Year })
+MERGE (article)-[:PUBLISHED_IN_YEAR]->(year);
+
+// CREATE RELATION BETWEEN ARTICLE AND MONTH
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (month:Month {Month: row.Month })
+MERGE (article)-[:PUBLISHED_IN_MONTH]->(month);
+
+// CREATE RELATION BETWEEN ARTICLE AND DAY
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (day:Day {Day: row.Day })
+MERGE (article)-[:PUBLISHED_ON_DAY]->(day);
+
+// CREATE READING_TIME
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (readingTime:ReadingTime {Minutes: row.Reading_Time });
+
+// CREATE RELATION BETWEEN ARTICLE AND READING_TIME
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (readingTime:ReadingTime {Minutes: row.Reading_Time })
+MERGE (article)-[:TAKES]->(readingTime);
+
+// CREATE CLAPS
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (claps:Claps {Count: row.Claps });
+
+// CREATE RELATION BETWEEN ARTICLE AND CLAPS
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (claps:Claps {Count: row.Claps })
+MERGE (article)-[:AWARDED]->(claps);
+
+// CREATE CATEGORY
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (category:Category {Type: row.Category });
+
+// CREATE RELATION BETWEEN ARTICLE AND CATEGORY
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (category:Category {Type: row.Category })
+MERGE (article)-[:CATEGORIZED_AS]->(category);
+
+// CREATE IMAGE
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MERGE (image:Image {Boolean: row.Image });
+
+// CREATE RELATION BETWEEN ARTICLE AND IMAGE
+:auto USING PERIODIC COMMIT 500
+LOAD CSV With HEADERS FROM 'file:///Medium_transformed.csv' AS row
+MATCH (article:Article {Title: row.Title })
+MATCH (image:Image {Boolean: row.Image })
+MERGE (article)-[:HAS]->(image);
